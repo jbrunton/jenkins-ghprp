@@ -1,21 +1,29 @@
 package org.jenkinsci.plugins.testplugin;
+import hudson.EnvVars;
 import hudson.Launcher;
 import hudson.Extension;
 import hudson.FilePath;
+import hudson.model.*;
 import hudson.util.FormValidation;
-import hudson.model.AbstractProject;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.tasks.Builder;
 import hudson.tasks.BuildStepDescriptor;
 import jenkins.tasks.SimpleBuildStep;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.Repository;
+import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.service.PullRequestService;
+import org.eclipse.egit.github.core.service.RepositoryService;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.QueryParameter;
 
 import javax.servlet.ServletException;
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Sample {@link Builder}.
@@ -35,19 +43,19 @@ import java.io.IOException;
  */
 public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
 
-    private final String name;
+    private final String propertiesFilePath;
 
     // Fields in config.jelly must match the parameter names in the "DataBoundConstructor"
     @DataBoundConstructor
-    public HelloWorldBuilder(String name) {
-        this.name = name;
+    public HelloWorldBuilder(String propertiesFilePath) {
+        this.propertiesFilePath = propertiesFilePath;
     }
 
     /**
      * We'll use this from the <tt>config.jelly</tt>.
      */
     public String getName() {
-        return name;
+        return propertiesFilePath;
     }
 
     @Override
@@ -56,10 +64,35 @@ public class HelloWorldBuilder extends Builder implements SimpleBuildStep {
         // Since this is a dummy, we just say 'hello world' and call that a build.
 
         // This also shows how you can consult the global configuration of the builder
-        if (getDescriptor().getUseFrench())
-            listener.getLogger().println("Bonjour, "+name+"!");
-        else
-            listener.getLogger().println("Hello, "+name+"!");
+
+        try {
+            EnvVars env = build.getEnvironment(listener);
+            String branchName = env.get("BRANCH_NAME", null);
+
+            RepositoryId repoId = new RepositoryId("jbrunton", "pocket-timeline-android");
+            PullRequestService prService = new PullRequestService();
+            List<PullRequest> openRequests = prService.getPullRequests(repoId, "open");
+
+            for (PullRequest pr : openRequests) {
+                String prHeadRef = pr.getHead().getRef();
+                if (prHeadRef.equals(branchName)) {
+                    String prBaseRef = pr.getBase().getRef();
+
+                    listener.getLogger().println("Pull request found: " + pr.getId());
+                    listener.getLogger().println("Head: " + prHeadRef);
+                    listener.getLogger().println("Base: " + prBaseRef);
+                    File propertiesFile = new File(propertiesFilePath);
+                    FileUtils.writeStringToFile(propertiesFile, "PR_BASE_REF=" + prBaseRef);
+
+//                    ParameterValue value = new StringParameterValue("PR_BASE_REF", prBaseRef);
+//                    build.replaceAction(new ParametersAction(value));
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     // Overridden for better type safety.
