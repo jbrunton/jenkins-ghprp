@@ -12,9 +12,9 @@ Jenkins 2 includes the awesome new multibranch pipeline workflow, which automati
 
 A common scenario for such a workflow is to build and test against the pull request merge commit. However, out of the box Jenkins doesn't provide the build environment with any context about open pull requests, so this isn't possible (and the Github Pull Request Builder plugin doesn't seem to work with this new workflow).
 
-## How does this plugin work?
+## How does it work?
 
-It provides a method which will query the Github repository for open pull requests and find the one associated with the branch under test. This can be used in a jenkins pipeline script like so:
+This plugin provides a method which will query the Github repository for open pull requests and find the one associated with the branch under test. This can be used in a jenkins pipeline script like so:
 
 ```groovy
 def pr = pullRequestProperties(
@@ -42,8 +42,8 @@ Given `pr` as above, the following properties are available:
 
 ### What happens if there's no pull request open?
 
-The step raises an error. It assumes a workflow where a pull request is required in order for the changes to be staged:
+The step raises an error:
 
     java.lang.RuntimeException: Expected to find one pull request for this branch, but found 0
 
-It also fails if there is more than 1 pull request open.
+It assumes a workflow where a pull request is required in order for the changes to be staged. It also fails if there is more than 1 pull request open.
