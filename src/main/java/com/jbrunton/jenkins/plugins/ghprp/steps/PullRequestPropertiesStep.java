@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -61,41 +62,52 @@ public class PullRequestPropertiesStep extends AbstractStepImpl {
 
         @Override
         protected Map run() throws Exception {
-            return createProperties();
+            try {
+                PullRequest pr = findPullRequestForBranch();
+                return propertiesForPullRequest(pr);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
 
-        private Map createProperties() {
-            try {
-                RepositoryId repoId = RepositoryId.createFromId(step.repository);
-                PullRequestService prService = new PullRequestService();
-                List<PullRequest> openRequests = prService.getPullRequests(repoId, "open");
+        private PullRequest findPullRequestForBranch() throws IOException {
+            List<PullRequest> pullRequests = new LinkedList<>();
 
-                for (PullRequest pr : openRequests) {
-                    final String sourceBranch = pr.getHead().getRef();
-                    final String sourceBranchSha = pr.getHead().getSha();
-                    if (sourceBranch.equals(step.branchName)) {
-                        final String targetBranch = pr.getBase().getRef();
-                        final String targetBranchSha = pr.getBase().getSha();
-
-                        launcher.getListener().getLogger().println("Pull request found: " + pr.getId());
-                        launcher.getListener().getLogger().println("Head: " + sourceBranch);
-                        launcher.getListener().getLogger().println("Base: " + targetBranch);
-
-                        final String commitSha = "origin/pr/" + pr.getNumber();
-
-                        return new HashMap() {{
-                            put("targetBranch", targetBranch);
-                            put("targetBranchSha", targetBranchSha);
-                            put("sourceBranch", sourceBranch);
-                            put("sourceBranchSha", sourceBranchSha);
-                            put("commitSha", commitSha);
-                        }};
-                    }
+            for (PullRequest pr : findOpenPullRequests()) {
+                final String sourceBranch = pr.getHead().getRef();
+                if (sourceBranch.equals(step.branchName)) {
+                    pullRequests.add(pr);
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-            return null;
+
+            if (pullRequests.size() == 1) {
+                return pullRequests.get(0);
+            } else {
+                throw new RuntimeException("Expected to find one pull request for this branch, but found " + pullRequests.size());
+            }
+        }
+
+        private List<PullRequest> findOpenPullRequests() throws IOException {
+            RepositoryId repoId = RepositoryId.createFromId(step.repository);
+            PullRequestService prService = new PullRequestService();
+            return prService.getPullRequests(repoId, "open");
+        }
+
+        private Map propertiesForPullRequest(PullRequest pr) {
+            Map<String, String> properties = new HashMap<>();
+
+            final String sourceBranch = pr.getHead().getRef();
+            properties.put("sourceBranch", sourceBranch);
+            properties.put("sourceBranchRef", "origin/" + sourceBranch);
+
+            final String targetBranch = pr.getBase().getRef();
+            properties.put("targetBranch", targetBranch);
+            properties.put("targetBranchRef", "origin/" + targetBranch);
+
+            final String mergeRef = "origin/pr/" + pr.getNumber();
+            properties.put("mergeRef", mergeRef);
+
+            return properties;
         }
 
     }
