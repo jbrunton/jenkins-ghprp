@@ -23,10 +23,12 @@ import java.util.Map;
 
 public class PullRequestPropertiesStep extends AbstractStepImpl {
     private final String branchName;
+    private final String repository;
 
     @DataBoundConstructor
-    public PullRequestPropertiesStep(String branchName) {
+    public PullRequestPropertiesStep(String branchName, String repository) {
         this.branchName = branchName;
+        this.repository = repository;
     }
 
     @Extension
@@ -64,7 +66,7 @@ public class PullRequestPropertiesStep extends AbstractStepImpl {
 
         private Map createProperties() {
             try {
-                RepositoryId repoId = new RepositoryId("jbrunton", "pocket-timeline-android");
+                RepositoryId repoId = RepositoryId.createFromId(step.repository);
                 PullRequestService prService = new PullRequestService();
                 List<PullRequest> openRequests = prService.getPullRequests(repoId, "open");
 
