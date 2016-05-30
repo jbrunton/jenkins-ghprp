@@ -28,7 +28,7 @@ Sample log from above job:
 
     Found pull request from dev-branch to master. Checking out origin/pr/101
 
-## Available Properties
+### Available Properties
 
 Given `pr` as above, the following properties are available:
 
@@ -39,3 +39,11 @@ Given `pr` as above, the following properties are available:
 |pr.targetBranch   |The target branch                |`master`           |
 |pr.targetBranchRef|Ref name for the target branch   |`origin/master`    |
 |pr.mergeRef       |Ref of the merge commit          |`origin/pr/101`    |
+
+### What happens if there's no pull request open?
+
+The step raises an error. It assumes a workflow where a pull request is required in order for the changes to be staged:
+
+    java.lang.RuntimeException: Expected to find one pull request for this branch, but found 0
+
+It also fails if there is more than 1 pull request open.
