@@ -2,11 +2,15 @@
 
 Provides context about the open pull request (target branch, merge commit, etc.) for a given branch, to make it easier to run CI against the merge.
 
-## Why?
+## What's this for?
 
 Jenkins 2 includes the awesome new multibranch pipeline workflow, which automatically creates projects for each branch in the repository.
 
 A common scenario for such a workflow is to build and test against the pull request merge commit. However, out of the box Jenkins doesn't provide the build environment with any context about open pull requests, so this isn't possible (and the Github Pull Request Builder plugin doesn't seem to work with this new workflow).
+
+## Installation
+
+Download from [releases](https://github.com/jbrunton/jenkins-ghprp/releases). Put the hpi file in your Jenkins plugins directory and restart Jenkins.
 
 ## How does this plugin work?
 
