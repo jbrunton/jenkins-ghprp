@@ -15,15 +15,14 @@ import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class PrPropertiesStep extends AbstractStepImpl {
+public class PullRequestPropertiesStep extends AbstractStepImpl {
     @DataBoundConstructor
-    public PrPropertiesStep() {}
+    public PullRequestPropertiesStep() {}
 
     @Extension
     public static class DescriptorImpl extends AbstractStepDescriptorImpl {
