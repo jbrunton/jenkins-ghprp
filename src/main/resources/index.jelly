@@ -3,5 +3,6 @@
   This view is used to render the installed plugins page.
 -->
 <div>
-  This plugin is a sample to explain how to write a Jenkins plugin.
+  Provides context about the open pull request (target branch, merge commit, etc.) for a given branch, to
+  make it easier to run CI against the merge.
 </div>
