@@ -9,8 +9,8 @@
     <version>2.3</version>
     <relativePath/>
   </parent>
-  <groupId>org.jenkins-ci.plugins</groupId>
-  <artifactId>test-plugin</artifactId>
+  <groupId>com.jbrunton.jenkins.plugins</groupId>
+  <artifactId>jenkins-ghprp</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
@@ -28,9 +28,10 @@
     -->
   </properties>
 
-  <name>TODO Plugin</name>
-  <description>TODO</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/TODO+Plugin</url>
+  <name>Github Pull Request Properties</name>
+  <description>Provides context about the open pull request (target branch, merge commit, etc.) for a given branch, to
+    make it easier to run CI against the merge.</description>
+  <url>https://github.com/jbrunton/jenkins-ghprp</url>
 
   <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
 
