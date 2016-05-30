@@ -15,14 +15,19 @@ import org.jenkinsci.plugins.workflow.steps.StepContextParameter;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class PullRequestPropertiesStep extends AbstractStepImpl {
+    private final String branchName;
+
     @DataBoundConstructor
-    public PullRequestPropertiesStep() {}
+    public PullRequestPropertiesStep(String branchName) {
+        this.branchName = branchName;
+    }
 
     @Extension
     public static class DescriptorImpl extends AbstractStepDescriptorImpl {
@@ -43,6 +48,9 @@ public class PullRequestPropertiesStep extends AbstractStepImpl {
 
     public static final class Execution extends AbstractSynchronousNonBlockingStepExecution<Map> {
 
+        @Inject
+        private transient PullRequestPropertiesStep step;
+
         @StepContextParameter
         private transient Run build;
 
@@ -56,9 +64,6 @@ public class PullRequestPropertiesStep extends AbstractStepImpl {
 
         private Map createProperties() {
             try {
-                EnvVars env = build.getEnvironment(launcher.getListener());
-                String branchName = env.get("BRANCH_NAME", null);
-
                 RepositoryId repoId = new RepositoryId("jbrunton", "pocket-timeline-android");
                 PullRequestService prService = new PullRequestService();
                 List<PullRequest> openRequests = prService.getPullRequests(repoId, "open");
@@ -66,7 +71,7 @@ public class PullRequestPropertiesStep extends AbstractStepImpl {
                 for (PullRequest pr : openRequests) {
                     final String sourceBranch = pr.getHead().getRef();
                     final String sourceBranchSha = pr.getHead().getSha();
-                    if (sourceBranch.equals(branchName)) {
+                    if (sourceBranch.equals(step.branchName)) {
                         final String targetBranch = pr.getBase().getRef();
                         final String targetBranchSha = pr.getBase().getSha();
 
@@ -86,8 +91,6 @@ public class PullRequestPropertiesStep extends AbstractStepImpl {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             return null;
