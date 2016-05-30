@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.testplugin.steps;
+package com.jbrunton.jenkins.plugins.ghprp.steps;
 
 import hudson.EnvVars;
 import hudson.Extension;
